@@ -1,0 +1,14 @@
+# 日志等级: "debug" (显示详细请求) 或 "info" (只显示结果)
+log_level: "info"
+
+# Qmsg酱 推送 Key (不需要推送则留空)
+qmsg_key: ""
+
+# 用户列表
+# 给账号起个名字，方便区分
+users:
+  - nickname: "我的大号"       
+    token: "这里填入教程中获取的Token"
+    
+  - nickname: "我的小号"
+    token: "这里填入另一个Token"
