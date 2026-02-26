@@ -1,3 +1,4 @@
 httpx>=0.25.0
 pycryptodome>=3.19.0
+# pyyaml 仅在使用 config.yaml 配置文件时需要，青龙面板使用环境变量可不装
 pyyaml
