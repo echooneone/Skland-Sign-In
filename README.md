@@ -9,21 +9,24 @@
 
 #### 1. 拉取仓库
 
-在青龙面板「订阅管理」中添加订阅，或在「脚本管理」中手动添加脚本文件：
+在青龙面板「订阅管理」中添加订阅，各字段填写如下：
 
-```
-名称：森空岛签到
-类型：公开仓库
-链接：https://github.com/kafuneri/Skland-Sign-In.git
-定时规则：2 10 * * *
-白名单：main.py
-```
+| 字段 | 填写内容 |
+|------|----------|
+| 名称 | 森空岛签到 |
+| 类型 | 公开仓库 |
+| 链接 | `https://github.com/echooneone/Skland-Sign-In.git` |
+| 定时规则 | `2 10 * * *` |
+| 白名单 | `main\.py` |
+| 黑名单 | *(留空)* |
+| 依赖文件 | `skland_api\|qmsg\|skland_notify` |
+| 仓库分支 | `main` |
 
-或者通过命令拉取：
+> ⚠️ **必须正确填写「白名单」和「依赖文件」**，否则青龙面板会对仓库中 **每个 `.py` 文件** 都创建定时任务。  
+> - 白名单限定只有 `main.py` 作为任务入口  
+> - 依赖文件让 `skland_api.py` / `qmsg.py` / `skland_notify.py` 作为库文件被引用，而不是独立任务
 
-```bash
-ql repo https://github.com/kafuneri/Skland-Sign-In.git "main" "" "skland_api|qmsg|notify"
-```
+
 
 #### 2. 安装依赖
 
@@ -67,8 +70,6 @@ SKLAND_NICKNAME=大号&小号&仓鼠号
 命令：task main.py
 定时规则：2 10 * * *
 ```
-
-> 建议设置在每天上午 10:02 执行，避免高峰期。
 
 #### 5. 通知推送
 

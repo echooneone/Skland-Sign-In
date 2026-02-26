@@ -16,7 +16,7 @@ import asyncio
 import os
 import logging
 from skland_api import SklandAPI
-from notify import send_notification
+from skland_notify import send_notification
 
 # 初始化基础日志
 logging.basicConfig(
