@@ -47,8 +47,12 @@ pycryptodome
 |--------|------|------|
 | `SKLAND_TOKEN` | ✅ | 用户Token，多账号用 `&` 分隔 |
 | `SKLAND_NICKNAME` | ❌ | 用户昵称，与Token顺序对应，用 `&` 分隔 |
+| `QL_NOTIFY_TOKEN` | ❌ | 青龙面板通知Token，获取方式见下方 |
 | `QMSG_KEY` | ❌ | Qmsg酱推送Key |
 | `LOG_LEVEL` | ❌ | 日志等级：`debug` / `info`（默认 `info`） |
+
+> **`QL_NOTIFY_TOKEN` 获取方式：**  
+> 青龙面板 → 系统设置 → 应用管理 → 新建应用（权限勾选"系统管理"）→ 复制生成的 Token → 粘贴到环境变量值中
 
 **环境变量示例：**
 
