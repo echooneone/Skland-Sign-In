@@ -31,7 +31,7 @@ def _try_import_ql_notify():
     # 方式1: 青龙运行时通常已将 /ql/scripts 加入 sys.path，直接 import
     try:
         import notify as _ql_mod  # noqa: PLC0415
-        fn = getattr(_ql_mod, "send_notify", None)
+        fn = getattr(_ql_mod, "send_notify", None) or getattr(_ql_mod, "send", None)
         if callable(fn):
             logger.info("检测到青龙面板通知模块 (sys.path)")
             return fn
@@ -51,12 +51,12 @@ def _try_import_ql_notify():
             spec = importlib.util.spec_from_file_location("_ql_notify", notify_file)
             mod = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(mod)
-            fn = getattr(mod, "send_notify", None)
+            fn = getattr(mod, "send_notify", None) or getattr(mod, "send", None)
             if callable(fn):
                 logger.info(f"检测到青龙面板通知模块: {notify_file}")
                 return fn
             else:
-                logger.warning(f"{notify_file} 中未找到 send_notify 函数，可用属性: {[x for x in dir(mod) if not x.startswith('_')]}")
+                logger.warning(f"{notify_file} 中未找到通知函数，可用属性: {[x for x in dir(mod) if not x.startswith('_')]}")
         except Exception as e:
             logger.debug(f"加载青龙通知模块失败 ({path}): {e}")
 
