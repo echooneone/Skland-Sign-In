@@ -47,14 +47,10 @@ pycryptodome
 |--------|------|------|
 | `SKLAND_TOKEN` | ✅ | 用户Token，多账号用 `&` 分隔 |
 | `SKLAND_NICKNAME` | ❌ | 用户昵称，与Token顺序对应，用 `&` 分隔 |
-| `QL_CLIENT_ID` | ❌ | 青龙应用 Client ID，与 `QL_CLIENT_SECRET` 配合使用 |
-| `QL_CLIENT_SECRET` | ❌ | 青龙应用 Client Secret，与 `QL_CLIENT_ID` 配合使用 |
-| `QMSG_KEY` | ❌ | Qmsg酱推送Key |
+| `QMSG_KEY` | ❌ | Qmsg酱推送Key（可选备用推送渠道） |
 | `LOG_LEVEL` | ❌ | 日志等级：`debug` / `info`（默认 `info`） |
 
-> **青龙通知配置方式：**  
-> 青龙面板 → 系统设置 → 应用管理 → 新建应用（权限勾选"**系统管理**"）  
-> 将显示的 **Client ID** 填入 `QL_CLIENT_ID`，**Client Secret** 填入 `QL_CLIENT_SECRET`
+> **青龙面板内置通知无需任何额外配置**，脚本会自动调用 `QLAPI.systemNotify()`，直接使用青龙「系统设置 → 通知设置」中配置的推送渠道。
 
 **环境变量示例：**
 
