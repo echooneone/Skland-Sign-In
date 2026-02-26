@@ -48,11 +48,16 @@ async def send_notification(title: str, message: str, qmsg_key: str = ""):
                 text=True,
                 timeout=30,
             )
+            stdout = result.stdout.strip()
+            stderr = result.stderr.strip()
+            logger.info(f"ql notify 输出: {stdout or '(无)'}")
+            if stderr:
+                logger.warning(f"ql notify stderr: {stderr}")
             if result.returncode == 0:
                 logger.info("青龙面板通知发送成功")
                 sent = True
             else:
-                logger.warning(f"青龙面板通知发送失败 (exit {result.returncode}): {result.stderr.strip()}")
+                logger.warning(f"青龙面板通知发送失败 (exit {result.returncode})")
         except Exception as e:
             logger.warning(f"青龙面板通知发送失败: {e}")
 
