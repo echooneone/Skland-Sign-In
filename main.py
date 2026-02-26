@@ -113,7 +113,7 @@ async def run_sign_in():
     api = SklandAPI(max_retries=3)
 
     # 3. 准备消息头部
-    notify_lines = ["📅 森空岛签到姬", ""]
+    notify_lines = ["森空岛签到报告", ""]
 
     logger.info(f"开始执行签到任务，共 {len(users)} 个账号")
 
@@ -121,13 +121,13 @@ async def run_sign_in():
         nickname_cfg = user.get("nickname", f"账号{index}")
         token = user.get("token", "")
 
-        user_header = f"🌈 No.{index}({nickname_cfg}):"
+        user_header = f"[{index}] {nickname_cfg}"
         notify_lines.append(user_header)
         logger.info(f"正在处理: {nickname_cfg}")
 
         if not token:
             logger.error(f"  [{nickname_cfg}] 未配置 Token")
-            notify_lines.append("❌ 账号配置错误: 缺少Token")
+            notify_lines.append("  错误: 缺少Token")
             notify_lines.append("")
             continue
 
@@ -135,7 +135,7 @@ async def run_sign_in():
             results, official_nickname = await api.do_full_sign_in(token)
 
             if not results:
-                notify_lines.append("❌ 未找到绑定角色")
+                notify_lines.append("  未找到绑定角色")
                 logger.warning(f"  [{nickname_cfg}] 未找到角色")
 
             for r in results:
@@ -144,26 +144,23 @@ async def run_sign_in():
                 )
 
                 if r.success:
-                    icon = "✅"
                     status_text = "成功"
                     detail = f" ({', '.join(r.awards)})" if r.awards else ""
                 elif is_signed_already:
-                    icon = "✅"
                     status_text = "已签"
                     detail = ""
                 else:
-                    icon = "❌"
                     status_text = "失败"
                     detail = f" ({r.error})"
 
-                line = f"{icon} {r.game}: {status_text}{detail}"
+                line = f"  {r.game}: {status_text}{detail}"
                 notify_lines.append(line)
-                logger.info(f"  - {line}")
+                logger.info(f"  - {line.strip()}")
 
         except Exception as e:
             error_msg = str(e)
             logger.error(f"  [{nickname_cfg}] 异常: {error_msg}")
-            notify_lines.append(f"❌ 系统错误: {error_msg}")
+            notify_lines.append(f"  错误: {error_msg}")
 
         notify_lines.append("")
 

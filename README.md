@@ -1,157 +1,77 @@
 # Skland-Sign-In
 
-森空岛自动签到脚本，用于实现森空岛平台下《明日方舟》与《终末地》的每日自动签到。  
-支持多账号管理、青龙面板一键部署、Qmsg酱消息推送。
+森空岛自动签到脚本，支持《明日方舟》与《终末地》每日自动签到，适配青龙面板部署。
 
-## 部署方式
+本项目基于 [kafuneri/Skland-Sign-In](https://github.com/kafuneri/Skland-Sign-In) 改造，增加了青龙面板环境变量配置与内置通知支持。非青龙面板部署请参考原项目文档。
 
-### 方式一：青龙面板部署（推荐）
+---
 
-#### 1. 拉取仓库
+## 青龙面板部署（测试版本 v2.19.2）
 
-在青龙面板「订阅管理」中添加订阅，各字段填写如下：
+### 1. 添加订阅
+
+在青龙面板「订阅管理」中新建订阅，各字段填写如下：
 
 | 字段 | 填写内容 |
 |------|----------|
 | 名称 | 森空岛签到 |
 | 类型 | 公开仓库 |
 | 链接 | `https://github.com/echooneone/Skland-Sign-In.git` |
-| 定时规则 | `2 10 * * *` |
-| 白名单 | `main\.py` |
-| 黑名单 | *(留空)* |
+| 定时规则 | `5 4 * * *` |
+| 白名单 | `main.py` |
 | 依赖文件 | `skland_api\|qmsg\|skland_notify` |
 | 仓库分支 | `main` |
 
-> ⚠️ **必须正确填写「白名单」和「依赖文件」**，否则青龙面板会对仓库中 **每个 `.py` 文件** 都创建定时任务。  
-> - 白名单限定只有 `main.py` 作为任务入口  
-> - 依赖文件让 `skland_api.py` / `qmsg.py` / `skland_notify.py` 作为库文件被引用，而不是独立任务
+**白名单与依赖文件的区别：**
+- **白名单**：控制哪些文件会被创建为定时任务。填 `main.py` 后只有 `main.py` 会生成任务，否则仓库中每个 `.py` 文件都会创建一个任务。
+- **依赖文件**：控制哪些文件作为库被一并复制到脚本目录供 `import` 使用。两者都需要填写。
 
+**关于订阅的定时规则：**
 
+订阅和任务是两套独立的定时机制：
+- **订阅定时**：控制青龙何时从仓库拉取更新代码
+- **任务定时**：控制何时执行签到脚本
 
-#### 2. 安装依赖
+任务创建时会复制订阅中填写的定时规则作为初始值，之后两者互不影响。
 
-在青龙面板「依赖管理」中添加 **Python3** 依赖：
+订阅运行后会自动创建签到任务，无需手动添加。如果不需要自动跟进脚本更新，可以在「订阅管理」中**禁用该订阅**，签到任务会照常每天执行。
+
+### 2. 安装依赖
+
+在青龙面板「依赖管理 - Python3」中添加：
 
 ```
 httpx
 pycryptodome
 ```
 
-> `pyyaml` 在使用环境变量配置时不需要安装。
-
-#### 3. 添加环境变量
+### 3. 添加环境变量
 
 在青龙面板「环境变量」中添加：
 
 | 变量名 | 必填 | 说明 |
 |--------|------|------|
-| `SKLAND_TOKEN` | ✅ | 用户Token，多账号用 `&` 分隔 |
-| `SKLAND_NICKNAME` | ❌ | 用户昵称，与Token顺序对应，用 `&` 分隔 |
-| `QMSG_KEY` | ❌ | Qmsg酱推送Key（可选备用推送渠道） |
-| `LOG_LEVEL` | ❌ | 日志等级：`debug` / `info`（默认 `info`） |
+| `SKLAND_TOKEN` | 是 | 用户 Token，多账号用 `&` 分隔 |
+| `SKLAND_NICKNAME` | 否 | 账号昵称，与 Token 顺序对应，用 `&` 分隔 |
+| `QMSG_KEY` | 否 | Qmsg 酱推送 Key（可选备用推送渠道） |
 
-> **青龙面板内置通知无需任何额外配置**，脚本会自动调用 `QLAPI.systemNotify()`，直接使用青龙「系统设置 → 通知设置」中配置的推送渠道。
-
-**环境变量示例：**
-
+多账号示例：
 ```
-# 单账号
-SKLAND_TOKEN=你的Token字符串
-
-# 多账号（用 & 分隔）
-SKLAND_TOKEN=Token1&Token2&Token3
-SKLAND_NICKNAME=大号&小号&仓鼠号
+SKLAND_TOKEN=Token1&Token2
+SKLAND_NICKNAME=大号&小号
 ```
 
-#### 4. 添加定时任务
+### 4. 通知推送
 
-在青龙面板「定时任务」中添加：
-
-```
-名称：森空岛签到
-命令：task main.py
-定时规则：2 10 * * *
-```
-
-#### 5. 通知推送
-
-脚本自动适配青龙面板内置通知系统。如果你在青龙面板中配置了推送渠道（如 Server酱、Bark、Telegram 等），签到结果会自动推送。  
-同时也支持 Qmsg酱 作为额外推送渠道。
-
----
-
-### 方式二：本地 / 服务器部署
-
-#### 环境要求
-
-* Python 3.8 或更高版本
-
-#### 安装步骤
-
-1. 克隆或下载本项目到本地。
-```bash
-git clone https://github.com/kafuneri/Skland-Sign-In.git && cd Skland-Sign-In
-```
-2. 在项目根目录下，安装所需依赖：
-
-```bash
-pip install -r requirements.txt
-```
-
-#### 配置方式
-
-**方式 A：使用环境变量（推荐）**
-
-```bash
-# Linux / macOS
-export SKLAND_TOKEN="你的Token"
-export QMSG_KEY="你的QmsgKey"    # 可选
-python3 main.py
-
-# Windows
-set SKLAND_TOKEN=你的Token
-set QMSG_KEY=你的QmsgKey
-python main.py
-```
-
-**方式 B：使用配置文件**
-
-将 `config.example.yaml` 复制为 `config.yaml` 并编辑：
-```bash
-cp config.example.yaml config.yaml
-```
-
-> 环境变量优先级高于配置文件。当设置了 `SKLAND_TOKEN` 环境变量时，`config.yaml` 会被忽略。
-
-#### 定时执行
-
-配合 cron（Linux）或计划任务（Windows）实现每日自动运行：
-
-```bash
-# crontab 示例：每天 10:02 执行
-2 10 * * * cd /path/to/Skland-Sign-In && python3 main.py
-```
+脚本自动调用青龙内置 `QLAPI.systemNotify()`，无需任何额外配置，直接使用「系统设置 - 通知设置」中配置的推送渠道即可。
 
 ---
 
 ## 如何获取 Token
 
-1. 登录 [森空岛官网](https://www.skland.com/)。
-2. 登录成功后，访问此链接：[https://web-api.skland.com/account/info/hg](https://web-api.skland.com/account/info/hg)
-3. 页面将返回一段 JSON 数据。请复制 `content` 字段中的长字符串。
-   * 数据示例：`{"code":0,"data":{"content":"请复制这一长串字符"}}`
-4. 将复制的字符串作为 Token 使用。
+1. 登录 [森空岛官网](https://www.skland.com/)
+2. 登录后访问：[https://web-api.skland.com/account/info/hg](https://web-api.skland.com/account/info/hg)
+3. 页面返回 JSON 数据，复制 `content` 字段中的字符串
+   - 示例：`{"code":0,"data":{"content":"复制这里的内容"}}`
 
-> ⚠️ Token 等同于账号凭证，请勿泄露给他人。
-
-## 配置消息推送（可选）
-
-### Qmsg酱
-
-1. 注册并登录 [Qmsg酱](https://qmsg.zendee.cn/)。
-2. 在管理台获取你的 KEY。
-3. 设置环境变量 `QMSG_KEY` 或填入 `config.yaml` 的 `qmsg_key` 字段。
-
-### 青龙面板内置通知
-
-在青龙面板「系统设置 → 通知设置」中配置推送渠道即可，脚本会自动调用。
+> Token 等同于账号凭证，请勿泄露。
