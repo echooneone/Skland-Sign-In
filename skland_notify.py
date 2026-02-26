@@ -10,14 +10,13 @@
      是为了避免与青龙面板自身的 /ql/scripts/notify.py 产生命名冲突。
 """
 
-import importlib
 import logging
 import os
 import sys
 
 logger = logging.getLogger("skland_notify")
 
-# 青龙面板自身通知模块所在路径
+# 青龙面板自身通知模块所在路径（按优先级排列）
 _QL_NOTIFY_PATHS = [
     "/ql/scripts",
     "/ql/data/scripts",
@@ -27,32 +26,46 @@ _ql_send = None
 
 
 def _try_import_ql_notify():
-    """动态查找并导入青龙面板 notify.py 中的 send_notify 函数"""
+    """尝试加载青龙面板 notify.py 中的 send_notify 函数"""
+
+    # 方式1: 青龙运行时通常已将 /ql/scripts 加入 sys.path，直接 import
+    try:
+        import notify as _ql_mod  # noqa: PLC0415
+        fn = getattr(_ql_mod, "send_notify", None)
+        if callable(fn):
+            logger.info("检测到青龙面板通知模块 (sys.path)")
+            return fn
+    except ImportError:
+        pass
+
+    # 方式2: 手动补充路径后再 import
     for path in _QL_NOTIFY_PATHS:
         notify_file = os.path.join(path, "notify.py")
         if not os.path.isfile(notify_file):
             continue
-
         if path not in sys.path:
             sys.path.insert(0, path)
-
         try:
-            mod = importlib.import_module("notify")
+            # 用 spec 加载避免与缓存冲突
+            import importlib.util
+            spec = importlib.util.spec_from_file_location("_ql_notify", notify_file)
+            mod = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(mod)
             fn = getattr(mod, "send_notify", None)
             if callable(fn):
                 logger.info(f"检测到青龙面板通知模块: {notify_file}")
                 return fn
+            else:
+                logger.warning(f"{notify_file} 中未找到 send_notify 函数，可用属性: {[x for x in dir(mod) if not x.startswith('_')]}")
         except Exception as e:
             logger.debug(f"加载青龙通知模块失败 ({path}): {e}")
-            if path in sys.path:
-                sys.path.remove(path)
 
     return None
 
 
 _ql_send = _try_import_ql_notify()
 if not _ql_send:
-    logger.debug("未检测到青龙面板通知模块，将尝试其他推送渠道")
+    logger.info("未检测到青龙面板通知模块，将尝试其他推送渠道")
 
 
 async def send_notification(title: str, message: str, qmsg_key: str = ""):

@@ -50,6 +50,10 @@ def load_config_from_env():
     }
 
     logger.info(f"从环境变量加载配置，共 {len(users)} 个账号")
+    # 启动时打印读取到的账号信息，方便排查环境变量是否配置正确
+    for i, u in enumerate(users, 1):
+        token_preview = u['token'][:6] + "..." if u['token'] else "(空)"
+        logger.info(f"  账号{i}: 昵称={u['nickname']}, Token={token_preview}")
     return config
 
 
